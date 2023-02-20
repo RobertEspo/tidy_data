@@ -1,0 +1,165 @@
+---
+title: "tidy_data"
+author: "Robert Esposito"
+date: "2023-02-13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r "libraries"}
+library(tidyverse)
+library(ds4ling)
+test_scores_rm
+```
+
+
+
+```{r, "select"}
+## select columns of a df
+## reduce horizontally
+
+## syntax = select(df, columns to keep)
+selected <- test_scores_rm %>%
+  select(id,test2)
+selected
+
+## select consecutive cols with : eg 
+consecutive_selected <- test_scores_rm %>%
+  select(spec:test2)
+consecutive_selected
+
+## rename columns select(new name = old name)
+renamed_selected <- test_scores_rm %>%
+  select(participant = id)
+renamed_selected
+
+## exercises
+glimpse(mtcars)
+?mtcars
+
+## select any 3 variables
+mtcars %>% select(mpg,cyl,disp)
+## select last 3 variables
+mtcars %>% select(am:carb)
+mtcars %>% select(9:11)
+## renamed mpg to hello_world
+mtcars %>% select(hello_world=mpg)
+```
+
+```{r, "filter"}
+## filter rows of df
+## verticle transformation
+## syntax = filter(df, logical test)
+
+## mpg < 20 & > 14
+mtcars %>% filter(mpg < 20 & mpg >14)
+mtcars %>% filter(mpg %>% between(14,20))
+## cyl == 6
+mtcars %>% filter(cyl==6)
+## mpg >= 20 | disp < 200
+mtcars %>% filter(mpg >= 20 | disp < 200)
+
+## filter for string
+test_scores_rm %>% filter(spec=='g1_lo')
+
+## making a graph using piping
+## read "%>%" as "and then"
+mtcars %>%
+  select(mpg,disp) %>%
+  filter(mpg > 20) %>%
+  ggplot() +
+  aes(x=disp,y=mpg) +
+  geom_point()
+```
+
+```{r,"arrange"}
+## arranges rows of df
+## default is low to high
+## desc() makes it go high to low
+
+##cyl & disp
+mtcars %>% arrange(cyl,disp)
+##mpg high to low
+mtcars %>% arrange(desc(mpg))
+```
+
+```{r,"mutate"}
+## create new column based on old cols
+## syntax = mutate(df,new_col = "observation_name")
+## ex: mutate(df,iq_z = (iq - mean(iq)) / sd(iq))
+## ex: mutate(df, smart = if_else(iq > 100,"yes","no'))
+
+mtcars %>%
+  select(mpg) %>%
+  mutate(mpg_x2 = mpg * 2,
+         mpg_c = mpg - mean(mpg)
+         )
+
+## create a new column called value that applies the label 'good' to cars that get over 18 mpg and the label 'bad' to cars that get 18 mpg or less
+
+mtcars %>%
+  mutate(value = if_else(mpg > 18,"good","bad"))
+mtcars %>%
+  mutate(value = if_else(mpg <= 18,"bad","good"))
+```
+
+```{r,"summarize"}
+## takes various rows of data & trims it down to a one row summary
+## summarize(df,mean_weight=mean(weight))
+### produces a one-row, one-column table
+## typically used with group_by()
+## df %>% group_by(.,group) %>% summarize(.,mean_Weight=mean(weight))
+
+## Calculate the mean value of mpg in the dataset mtcars
+mtcars %>%
+  summarize(mean_mpg = mean(mpg))
+## Calculate the mean value of mpg as a function of cyl
+mtcars %>%
+  group_by(cyl) %>%
+  summarize(mean_mpg = mean(mpg))
+## Calculate the mean, standard deviation, min, and max of mpg as a function of cyl
+mtcars %>%
+  group_by(cyl) %>%
+  summarize(
+    mean_mpg = mean(mpg),
+    sd_mpg = sd(mpg),
+    min_mpg = min(mpg),
+    max_mpg = max(mpg)
+    )
+```
+
+```{r,"separate()"}
+test_scores_rm
+long_test_scores_rm <- test_scores_rm %>%
+  separate(col = spec,
+           into = c('group','high_low'),
+           sep="_") %>%
+  separate(col = id,
+           into = c('lang','trash'),
+           sep=4,
+           remove=FALSE) %>%
+  select(-trash)
+long_test_scores_rm
+```
+
+```{r,"pivot_longer()"}
+## used to be called gather()
+## df wide --> long
+
+scores_longer <- test_scores_rm %>%
+  pivot_longer(cols=c('test1','test2'), ## or you can do cols = test1:test2
+               names_to = "test",
+               values_to="score")
+scores_longer
+```
+
+```{r,"pivot_wider()"}
+
+```
+
+
+
+
+
